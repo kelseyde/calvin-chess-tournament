@@ -2,6 +2,7 @@ package com.kelseyde.calvin.tournament.service;
 
 import com.kelseyde.calvin.tournament.configuration.PlayerConfiguration;
 import com.kelseyde.calvin.tournament.model.*;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -110,6 +111,11 @@ public class TournamentService {
         log.info("{} wins: {}", player2.getVersion(), player2Wins);
         log.info("Draws: {}", draws);
 
+    }
+
+    @PostConstruct
+    public void postConstruct() {
+        run();
     }
 
 
