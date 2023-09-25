@@ -12,21 +12,21 @@ public class PlayerConfiguration {
     @Value("tournament.player-one.version")
     private String playerOneVersion;
 
-    @Value("tournament.player-one.port")
-    private int playerOnePort;
+    @Value("tournament.player-one.url")
+    private String playerOneUrl;
 
     @Value("tournament.player-two.version")
     private String playerTwoVersion;
 
-    @Value("tournament.player-two.port")
-    private int playerTwoPort;
+    @Value("tournament.player-two.url")
+    private String playerTwoUrl;
 
     public Player getPlayerOne() {
-        return new Player(playerOneVersion, playerOnePort);
+        return new Player(playerOneVersion, playerOneUrl);
     }
 
     public Player getPlayerTwo() {
-        return new Player(playerTwoVersion, playerTwoPort);
+        return new Player(playerTwoVersion, playerTwoUrl);
     }
 
 }

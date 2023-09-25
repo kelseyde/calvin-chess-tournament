@@ -87,7 +87,7 @@ public class TournamentService {
                 result = blackResponse.getResult();
                 if (!result.equals(GameResult.IN_PROGRESS)) {
                     if (result.isWin()) {
-                        if (blackPlayer.getVersion().equals(player1.getVersion())) {
+                        if (whitePlayer.getVersion().equals(player1.getVersion())) {
                             player1Wins++;
                         } else {
                             player2Wins++;
