@@ -9,7 +9,8 @@
     <packaging>jar</packaging>
     <name>calvin-chess-engine</name>
 
-    <description>A chess engine written in Java.</description>
+    <description>A test utility for calvin-chess-engine that makes two versions of the engine play against each other,
+        to test the current engine strength against previous versions.</description>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -112,7 +113,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.kelseyde.calvin.Application</mainClass>
+                    <mainClass>com.kelseyde.calvin.tournament.Application</mainClass>
                 </configuration>
                 <executions>
                     <execution>

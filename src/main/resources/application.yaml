@@ -1,8 +1,19 @@
 spring:
   application:
-    name: calvin
+    name: calvin-chess-tournament
+
+engine:
+  version: '@project.version@'
 
 server:
-  port: 8080
+  port: 8081
   servlet:
     context-path: /${spring.application.name}
+
+tournament:
+  player-one:
+    version: 1.0.0
+    url: http://localhost:8080/calvin/game
+  player-two:
+    version: 1.1.0-SNAPSHOT
+    url: http://localhost:8081/calvin/game
