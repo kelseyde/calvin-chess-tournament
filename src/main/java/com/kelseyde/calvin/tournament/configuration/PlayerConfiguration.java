@@ -7,18 +7,16 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class PlayerConfiguration {
 
-    private static final String URL_TEMPLATE = "http://localhost:%s/play";
-
-    @Value("tournament.player-one.version")
+    @Value("${tournament.player-one.version}")
     private String playerOneVersion;
 
-    @Value("tournament.player-one.url")
+    @Value("${tournament.player-one.url}")
     private String playerOneUrl;
 
-    @Value("tournament.player-two.version")
+    @Value("${tournament.player-two.version}")
     private String playerTwoVersion;
 
-    @Value("tournament.player-two.url")
+    @Value("${tournament.player-two.url}")
     private String playerTwoUrl;
 
     public Player getPlayerOne() {

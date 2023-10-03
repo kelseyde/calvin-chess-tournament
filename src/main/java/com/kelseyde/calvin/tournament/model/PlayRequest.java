@@ -15,6 +15,7 @@ public class PlayRequest {
     private String from;
     private String to;
     private String promotion;
+    private Integer thinkTimeMs;
 
     public String toMoveString() {
         String moveString = String.format("%s - %s", from, to);

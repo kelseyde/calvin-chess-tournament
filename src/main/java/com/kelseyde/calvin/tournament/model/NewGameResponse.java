@@ -1,12 +1,16 @@
 package com.kelseyde.calvin.tournament.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 @Data
-@RequiredArgsConstructor
+@NoArgsConstructor
 public class NewGameResponse {
 
-    private final String gameId;
+    private String gameId;
+
+    private MoveResponse move;
 
 }

@@ -5,6 +5,7 @@ import com.kelseyde.calvin.tournament.model.*;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -16,18 +17,29 @@ import java.util.Random;
 @RequiredArgsConstructor
 public class TournamentService {
 
-    private static final int GAME_LIMIT = 100;
-    private static final int MOVE_LIMIT = 100;
+    @Value("${tournament.game-limit}")
+    private Integer gameLimit;
+
+    @Value("${tournament.move-limit}")
+    private Integer moveLimit;
+
+    @Value("${tournament.min-think-time-ms}")
+    private Integer minThinkTimeMs;
+
+    @Value("${tournament.max-think-time-ms}")
+    private Integer maxThinkTimeMs;
 
     private final PlayerConfiguration playerConfiguration;
 
     private final RestTemplate restTemplate;
 
+    private final Random random = new Random();
+
     private final List<PlayRequest> STARTING_MOVES = List.of(
-            PlayRequest.builder().from("e2").to("e4").build(),
-            PlayRequest.builder().from("d2").to("d4").build(),
-            PlayRequest.builder().from("c2").to("c4").build(),
-            PlayRequest.builder().from("g1").to("f3").build()
+            PlayRequest.builder().from("e2").to("e4").promotion("0").build(),
+            PlayRequest.builder().from("d2").to("d4").promotion("0").build(),
+            PlayRequest.builder().from("c2").to("c4").promotion("0").build(),
+            PlayRequest.builder().from("g1").to("f3").promotion("0").build()
     );
 
     public void run() {
@@ -44,7 +56,7 @@ public class TournamentService {
 
         int gameCount = 1;
 
-        while (gameCount <= GAME_LIMIT) {
+        while (gameCount <= gameLimit) {
 
             log.info("Starting game {}...", gameCount);
 
@@ -53,21 +65,26 @@ public class TournamentService {
             Player blackPlayer = whitePlayerRandom == 1 ? players.get(0) : players.get(1);
             log.info("Player {} is white, player {} is black", whitePlayer.getVersion(), blackPlayer.getVersion());
 
-            NewGameResponse newGameResponse = restTemplate.getForEntity(whitePlayer.getUrl() + "/new", NewGameResponse.class).getBody();
-            String gameId = newGameResponse.getGameId();
-            log.debug("Game {} ID: {}", gameCount, gameId);
+            NewGameResponse newGameResponse = restTemplate.getForEntity(whitePlayer.getUrl() + "/new/black", NewGameResponse.class).getBody();
+            String whiteGameId = newGameResponse.getGameId();
+            String blackGameId = "";
+            log.debug("White game {} ID: {}", gameCount, whiteGameId);
 
             GameResult result = GameResult.IN_PROGRESS;
 
-            PlayRequest move = STARTING_MOVES.get(new Random().nextInt(4));
-            log.info("White ({}) plays {}", whitePlayer.getVersion(), move.toMoveString());
+            MoveResponse move = newGameResponse.getMove();
             int moveCount = 1;
 
-            while (moveCount <= MOVE_LIMIT) {
+            while (moveCount <= moveLimit) {
 
-                log.info("White ({}) plays {}", blackPlayer.getVersion(), move.toMoveString());
-                PlayResponse blackResponse = restTemplate.postForObject(blackPlayer.getUrl() + "/play", move, PlayResponse.class);
-                result = blackResponse.getResult();
+                PlayRequest whiteMoveRequest = move.toPlayRequest(blackGameId, getThinkTime());
+                log.debug("White ({}) plays {}", whitePlayer.getVersion(), whiteMoveRequest.toMoveString());
+                log.debug("Sending request to black: {}", whiteMoveRequest);
+
+                PlayResponse blackMoveResponse = restTemplate.postForObject(blackPlayer.getUrl() + "/play", whiteMoveRequest, PlayResponse.class);
+                result = blackMoveResponse.getResult();
+                blackGameId = blackMoveResponse.getGameId();
+                log.debug("Black game {} ID: {}", gameCount, blackGameId);
                 if (!result.equals(GameResult.IN_PROGRESS)) {
                     if (result.isWin()) {
                         if (blackPlayer.getVersion().equals(player1.getVersion())) {
@@ -80,11 +97,14 @@ public class TournamentService {
                     }
                     break;
                 }
-                move = blackResponse.toPlayRequest();
-                log.info("Black ({}) plays {}", blackPlayer.getVersion(), move.toMoveString());
+                move = blackMoveResponse.getMove();
 
-                PlayResponse whiteResponse = restTemplate.postForObject(whitePlayer.getUrl() + "/play", move, PlayResponse.class);
-                result = blackResponse.getResult();
+                PlayRequest blackMoveRequest = move.toPlayRequest(whiteGameId, getThinkTime());
+                log.debug("Black ({}) plays {}", blackPlayer.getVersion(), blackMoveRequest.toMoveString());
+                log.debug("Sending request to white: {}", blackMoveRequest);
+
+                PlayResponse whiteMoveResponse = restTemplate.postForObject(whitePlayer.getUrl() + "/play", blackMoveRequest, PlayResponse.class);
+                result = whiteMoveResponse.getResult();
                 if (!result.equals(GameResult.IN_PROGRESS)) {
                     if (result.isWin()) {
                         if (whitePlayer.getVersion().equals(player1.getVersion())) {
@@ -97,11 +117,17 @@ public class TournamentService {
                     }
                     break;
                 }
-                move = whiteResponse.toPlayRequest();
+                move = whiteMoveResponse.getMove();
 
                 moveCount++;
+                if (moveCount > moveLimit) {
+                    log.info("Terminating game after 100 moves.");
+                    draws++;
+                }
             }
-            log.info("Game over! Result: {}", result);
+            log.info("Game over! Move count {}, Result: {}", moveCount, result);
+            log.info("Current standings: {} wins {}, {} wins {}, draws {}",
+                    player1.getVersion(), player1Wins, player2.getVersion(), player2Wins, draws);
             gameCount++;
 
         }
@@ -111,6 +137,10 @@ public class TournamentService {
         log.info("{} wins: {}", player2.getVersion(), player2Wins);
         log.info("Draws: {}", draws);
 
+    }
+
+    private int getThinkTime() {
+        return random.nextInt(minThinkTimeMs, maxThinkTimeMs);
     }
 
     @PostConstruct

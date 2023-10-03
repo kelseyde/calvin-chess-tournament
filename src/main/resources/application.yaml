@@ -11,9 +11,13 @@ server:
     context-path: /${spring.application.name}
 
 tournament:
+  game-limit: 100
+  move-limit: 100
+  min-think-time-ms: 500
+  max-think-time-ms: 1500
   player-one:
     version: 1.0.0-InitialEngine
     url: http://localhost:8081/calvin/game
   player-two:
-    version: 1.1.0-SNAPSHOT
-    url: http://localhost:8081/calvin/game
+    version: 1.1.0-IterativeDeepening
+    url: http://localhost:8080/calvin/game
