@@ -20,6 +20,7 @@ public class MoveResponse {
                 .from(from)
                 .to(to)
                 .promotion(promotion)
+                .thinkTimeMs(thinkTime)
                 .build();
     }
 

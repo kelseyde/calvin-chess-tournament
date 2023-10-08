@@ -7,7 +7,7 @@
     <artifactId>calvin-chess-tournament</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <name>calvin-chess-engine</name>
+    <name>calvin-chess-tournament</name>
 
     <description>A test utility for calvin-chess-engine that makes two versions of the engine play against each other,
         to test the current engine strength against previous versions.</description>

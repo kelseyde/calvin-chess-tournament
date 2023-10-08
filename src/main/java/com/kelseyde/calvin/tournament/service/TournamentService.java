@@ -65,26 +65,28 @@ public class TournamentService {
             Player blackPlayer = whitePlayerRandom == 1 ? players.get(0) : players.get(1);
             log.info("Player {} is white, player {} is black", whitePlayer.getVersion(), blackPlayer.getVersion());
 
-            NewGameResponse newGameResponse = restTemplate.getForEntity(whitePlayer.getUrl() + "/new/black", NewGameResponse.class).getBody();
-            String whiteGameId = newGameResponse.getGameId();
-            String blackGameId = "";
+            NewGameResponse whiteNewGameResponse = restTemplate.getForEntity(whitePlayer.getUrl() + "/new/white", NewGameResponse.class).getBody();
+            String whiteGameId = whiteNewGameResponse.getGameId();
             log.debug("White game {} ID: {}", gameCount, whiteGameId);
+
+            NewGameResponse blackNewGameResponse =  restTemplate.getForEntity(blackPlayer.getUrl() + "/new/black", NewGameResponse.class).getBody();
+            String blackGameId = blackNewGameResponse.getGameId();
+            log.debug("Black game {} ID: {}", gameCount, blackGameId);
 
             GameResult result = GameResult.IN_PROGRESS;
 
-            MoveResponse move = newGameResponse.getMove();
+            MoveResponse move = whiteNewGameResponse.getMove();
             int moveCount = 1;
 
             while (moveCount <= moveLimit) {
 
                 PlayRequest whiteMoveRequest = move.toPlayRequest(blackGameId, getThinkTime());
-                log.debug("White ({}) plays {}", whitePlayer.getVersion(), whiteMoveRequest.toMoveString());
+                log.info("White ({}) plays {}", whitePlayer.getVersion(), whiteMoveRequest.toMoveString());
                 log.debug("Sending request to black: {}", whiteMoveRequest);
 
                 PlayResponse blackMoveResponse = restTemplate.postForObject(blackPlayer.getUrl() + "/play", whiteMoveRequest, PlayResponse.class);
                 result = blackMoveResponse.getResult();
                 blackGameId = blackMoveResponse.getGameId();
-                log.debug("Black game {} ID: {}", gameCount, blackGameId);
                 if (!result.equals(GameResult.IN_PROGRESS)) {
                     if (result.isWin()) {
                         if (blackPlayer.getVersion().equals(player1.getVersion())) {
@@ -100,7 +102,7 @@ public class TournamentService {
                 move = blackMoveResponse.getMove();
 
                 PlayRequest blackMoveRequest = move.toPlayRequest(whiteGameId, getThinkTime());
-                log.debug("Black ({}) plays {}", blackPlayer.getVersion(), blackMoveRequest.toMoveString());
+                log.info("Black ({}) plays {}", blackPlayer.getVersion(), blackMoveRequest.toMoveString());
                 log.debug("Sending request to white: {}", blackMoveRequest);
 
                 PlayResponse whiteMoveResponse = restTemplate.postForObject(whitePlayer.getUrl() + "/play", blackMoveRequest, PlayResponse.class);
