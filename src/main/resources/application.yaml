@@ -16,8 +16,8 @@ tournament:
   min-think-time-ms: 400
   max-think-time-ms: 700
   player-one:
-    version: 1.8.0-AvoidRepetitions
+    version: 2.4.2-ReverseFutilityPruning
     url: http://localhost:8080/calvin/game
   player-two:
-    version: 1.9.0-LegalMoveGeneration
-    url: http://localhost:8084/calvin/game
+    version: 2.5.0-SearchOptimisations
+    url: http://localhost:8082/calvin/game
